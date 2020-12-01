@@ -1,1 +1,1 @@
-MOIN{.txt[{A{B{C{D{E
+MOIN{.txt[{A{B{C{D{E
