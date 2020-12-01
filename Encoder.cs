@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 
 namespace Zipper
@@ -8,26 +8,27 @@ namespace Zipper
         static void Main(string[] args)
         {
             string s_file = "";
-            while(true)                  //Schleife zur Eingabe des Dateinamens und der Überprüfung, ob diese exestiert
+            while (true)                  //Schleife zur Eingabe des Dateinamens und der Überprüfung, ob diese exestiert
             {
                 Console.WriteLine("Geben Sie den Dateinamen mit Dateiendung ein");
                 s_file = Console.ReadLine();
-                if(File.Exists(s_file))  //Überprüft ob die Datei exestiert und bricht die Schleife ab wenn ja
+                if (File.Exists(s_file))  //Überprüft ob die Datei exestiert und bricht die Schleife ab wenn ja
                 {
                     break;
                 }
             }
-            Encoder encoder = new Encoder(s_file, '³');
-            if(encoder.Exist() == true)
+            Encoder encoder = new Encoder(s_file, '{');
+            if (encoder.Exist() == true)
             {
                 encoder.Encoding();
             }
         }
     }
-    public class Encoder 
+    public class Encoder
     {
-        char[] ac_prefix = new char[4] { 'M', 'O', 'I', 'N' };  //Dateipräfix zur Identifikation als unsere Datei (MagicNumber)
+        string s_prefix = "MOIN";                               //Dateipräfix zur Identifikation als unsere Datei (MagicNumber)
         char[] ac_ASCII;
+        char[] ac_signs = new char[4];                          //Array zum Speichern der letzten 4 Zeichen, die gelesen wurden
         string s_file;                                          //Dateiname
         string s_name;                                          //Dateinname für.fun
         string s_ending;
@@ -36,7 +37,7 @@ namespace Zipper
         BinaryReader br;
         BinaryWriter bw;
 
-        public Encoder(string s_file, char c_sign) 
+        public Encoder(string s_file, char c_sign)
         {
             this.s_file = s_file;
             this.c_sign = c_sign;
@@ -71,46 +72,41 @@ namespace Zipper
         {
             Read();
             Prefix();
-            Ending();
+            Algorythm();
             Done();
         }
         private void Read()                                     /*Liest den Inhalt der zu packenden Datei und speichert ihn in einem Char-Array*/
         {
             fs = new FileStream(s_file, FileMode.Open);
             br = new BinaryReader(fs);
-            string s_bytes = "";
-            while (fs.Position < fs.Length)
+            ac_ASCII = new char[fs.Length];
+            for (long l = 0; fs.Position < fs.Length; l++)
             {
-                s_bytes += (char)br.ReadByte();
+                ac_ASCII[l] += (char)br.ReadByte();
             }
-            ac_ASCII = s_bytes.ToCharArray();
             fs.Flush();
             br.Close();
             fs.Close();
         }
         private void Prefix()
         {
+            MagicNumber();
+            Ending();
+        }
+        private void MagicNumber()
+        {
             fs = new FileStream(s_name, FileMode.Create);
             br = new BinaryReader(fs);
             bw = new BinaryWriter(fs);
             fs.Position = 0;
-            foreach (char c in ac_prefix)
+            foreach (char c in s_prefix)
                 bw.Write(c);
         }
         private void Ending()
         {
             foreach (char c in s_ending)
                 bw.Write(c);
-            foreach (char c in ac_ASCII)
-                bw.Write(c);
-
-            //debug
-            fs.Position = 0;
-            while (fs.Position < fs.Length)
-            {
-                Console.Write((char)br.ReadByte());
-            }
-            Console.ReadLine();
+            bw.Write('[');                                      //Identikator für das Ende der Dateiendung (Festgelegt)
         }
         private void Done()                                     /*Schliesst und leer alle offenen Streams*/
         {
@@ -118,6 +114,36 @@ namespace Zipper
             bw.Close();
             br.Close();
             fs.Close();
+        }
+        private void Algorythm()
+        {
+            int i_sameSigns = 0;                                //Zählt die Anzahl an gleichen Zeichen
+            for (long l = 0; l < ac_ASCII.Length; l++)
+            {
+                if (l != ac_ASCII.Length - 1)
+                {
+                    if (i_sameSigns >= 4 && ac_ASCII[l] != ac_ASCII[l + 1])
+                    {
+                        bw.Write(c_sign);
+                        bw.Write(i_sameSigns);
+                        bw.Write(ac_ASCII[l]);
+                    }
+                    if (ac_ASCII[l] == ac_ASCII[l + 1])
+                    {
+                        i_sameSigns++;
+                    }
+                    else
+                    {
+                        i_sameSigns = 0;
+                    }
+                }
+                else if (i_sameSigns >= 4)
+                {
+                    bw.Write(c_sign);
+                    bw.Write(i_sameSigns);
+                    bw.Write(ac_ASCII[l]);
+                }
+            }
         }
     }
 }
