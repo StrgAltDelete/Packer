@@ -91,6 +91,7 @@ namespace Zipper
         private void Prefix()
         {
             MagicNumber();
+            Seperator();
             Ending();
         }
         private void MagicNumber()
@@ -108,6 +109,10 @@ namespace Zipper
                 bw.Write(c);
             bw.Write('[');                                      //Identikator für das Ende der Dateiendung (Festgelegt)
         }
+        private void Seperator()
+        {
+            bw.Write(c_sign);
+        }
         private void Done()                                     /*Schliesst und leer alle offenen Streams*/
         {
             bw.Flush();
@@ -117,30 +122,43 @@ namespace Zipper
         }
         private void Algorythm()
         {
-            int i_sameSigns = 0;                                //Zählt die Anzahl an gleichen Zeichen
+            byte b_sameSigns = 1;                                //Zählt die Anzahl an gleichen Zeichen
             for (long l = 0; l < ac_ASCII.Length; l++)
             {
                 if (l != ac_ASCII.Length - 1)
                 {
-                    if (i_sameSigns >= 4 && ac_ASCII[l] != ac_ASCII[l + 1])
+                    if (b_sameSigns >= 4 && ac_ASCII[l] != ac_ASCII[l + 1])
                     {
                         bw.Write(c_sign);
-                        bw.Write(i_sameSigns);
+                        bw.Write((char)b_sameSigns);
                         bw.Write(ac_ASCII[l]);
+                        b_sameSigns = 1;
                     }
                     if (ac_ASCII[l] == ac_ASCII[l + 1])
                     {
-                        i_sameSigns++;
+                        b_sameSigns++;
+                    }
+                    else if (b_sameSigns > 1)
+                    {
+                        for (int i2 = b_sameSigns; i2 > 0; i2--)
+                        {
+                            bw.Write(ac_ASCII[l - i2]);
+                        }
+                        b_sameSigns = 1;
                     }
                     else
                     {
-                        i_sameSigns = 0;
+                        b_sameSigns = 1;
                     }
                 }
-                else if (i_sameSigns >= 4)
+                else if (b_sameSigns >= 4)
                 {
                     bw.Write(c_sign);
-                    bw.Write(i_sameSigns);
+                    bw.Write((char)b_sameSigns);
+                    bw.Write(ac_ASCII[l]);
+                }
+                else
+                {
                     bw.Write(ac_ASCII[l]);
                 }
             }
