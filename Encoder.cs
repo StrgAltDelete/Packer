@@ -15,13 +15,13 @@ namespace Zipper
                 s_originalName = Console.ReadLine();
                 if (File.Exists(s_originalName))                                                //Überprüft ob die Datei exestiert und bricht die Schleife ab wenn ja
                 {
-                    if (s_originalName.Length > 8)
+                    if (s_originalName.Length > 8)                                              //Überprüft ob der Name gekürtzt werden muss
                         s_file = s_originalName.Remove(8);
                     break;
                 }
             }
             Encoder encoder = new Encoder(s_originalName, s_file, '{');
-            if (encoder.Exist() == true)
+            if (encoder.Exist() == true)                                                        //Wenn die .fun-Zieldatei noch nicht exestiert wird eine erstellt
             {
                 encoder.Encoding();
             }
@@ -66,7 +66,7 @@ namespace Zipper
         {
             MagicNumber();
             Seperator();
-            Ending();
+            Name();
         }
         private void MagicNumber()                                                          /*Identikator, dass es unsere .fun-Datei ist*/
         {
@@ -75,18 +75,18 @@ namespace Zipper
             foreach (char c in s_prefix)                                                        //Setzt unsere MagicLine
                 bw.Write(c);
         }
-        private void Ending()                                                               /*Schreibt den evtl gekürtzten Dateinamen in den Header*/
+        private void Name()                                                               /*Schreibt den evtl gekürtzten Dateinamen in den Header*/
         {
-            foreach (char c in s_name)
+            foreach (char c in s_name)                                                      //geht durch den Namen der .fun Datei
             {
                 bool b_dot = false;
-                if (c == '.')
+                if (c == '.')                                                               //Wenn es . erreicht wechselt es zur originellen Datei
                 {
                     b_dot = true;
                     bool b_dot2 = false;
-                    foreach (char c2 in s_file)
+                    foreach (char c2 in s_file)                                             //Geht durch die originelle Datei
                     {
-                        if (c2 == '.')
+                        if (c2 == '.')                                                      //Wenn es . erreicht wird die Dateiendung in die .fun-Datei geschrieben
                             b_dot2 = true;
                         if (b_dot2 == true)
                             bw.Write(c2);
@@ -154,11 +154,7 @@ namespace Zipper
                 {
                     bw.Write(c_sign);
                     bw.Write(b_sameSigns);
-                    char c = (char)br.ReadByte();
-                    for (byte i2 = b_sameSigns; i2 > 0; i2--)
-                    {
-                        bw.Write(c);
-                    }
+                    bw.Write(br.ReadByte());
                 }
                 else
                 {
