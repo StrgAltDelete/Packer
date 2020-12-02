@@ -130,9 +130,10 @@ namespace Zipper
                     if (b_sameSigns >= 4 && ac_ASCII[l] != ac_ASCII[l + 1])
                     {
                         bw.Write(c_sign);
-                        bw.Write((char)b_sameSigns);
+                        bw.Write(b_sameSigns);
                         bw.Write(ac_ASCII[l]);
                         b_sameSigns = 1;
+                        continue;                                //Damit es nicht nochmal des Zeichen von der else darunter schreibt
                     }
                     if (ac_ASCII[l] == ac_ASCII[l + 1])
                     {
@@ -140,7 +141,7 @@ namespace Zipper
                     }
                     else if (b_sameSigns > 1)
                     {
-                        for (int i2 = b_sameSigns; i2 > 0; i2--)
+                        for (byte i2 = b_sameSigns; i2 > 0; i2--)
                         {
                             bw.Write(ac_ASCII[l - i2]);
                         }
@@ -148,13 +149,14 @@ namespace Zipper
                     }
                     else
                     {
+                        bw.Write(ac_ASCII[l]);
                         b_sameSigns = 1;
                     }
                 }
                 else if (b_sameSigns >= 4)
                 {
                     bw.Write(c_sign);
-                    bw.Write((char)b_sameSigns);
+                    bw.Write(b_sameSigns);
                     bw.Write(ac_ASCII[l]);
                 }
                 else
