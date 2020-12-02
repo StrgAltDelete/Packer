@@ -1,0 +1,1 @@
+MOIN{T1 (work.txt[{A{B{C{D
