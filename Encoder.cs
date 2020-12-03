@@ -131,24 +131,34 @@ namespace Zipper
                         continue;                                                               //Damit es nicht nochmal des Zeichen von der else darunter schreibt
                     }
                     fs_Read.Position = l;                                                       //Muss durch die Bedingung der if zurückgestzt werden
-                    if (br.ReadByte() == br.ReadByte())                                         //Wenn das darauf folgende Byte das selbe ist
+                    if ((char)br.ReadByte() == c_sign)
                     {
-                        b_sameSigns++;
+                        bw.Write(c_sign);
+                        bw.Write(b_sameSigns);
+                        bw.Write(c_sign);
                     }
-                    else if (b_sameSigns > 1)                                                   //Falls es mehrere Zeichen einer Art sind, aber nicht genug zum packen
+                    else                                                                            //Else statt else if, damit die Position zurückgesetzt werden kann
                     {
-                        char c = (char)br.ReadByte();
-                        for (byte i2 = b_sameSigns; i2 > 0; i2--)
+                        fs_Read.Position = l;
+                        if (br.ReadByte() == br.ReadByte())                                         //Wenn das darauf folgende Byte das selbe ist
                         {
-                            bw.Write(c);
+                            b_sameSigns++;
                         }
-                        b_sameSigns = 1;
-                    }
-                    else                                                                        //Falls es nur 1 Zeichen ist
-                    {
-                        fs_Read.Position = l;                                                   //Muss durch die Bedingung der if davor zurückgestzt werden
-                        bw.Write(br.ReadByte());
-                        b_sameSigns = 1;
+                        else if (b_sameSigns > 1)                                                   //Falls es mehrere Zeichen einer Art sind, aber nicht genug zum packen
+                        {
+                            char c = (char)br.ReadByte();
+                            for (byte i2 = b_sameSigns; i2 > 0; i2--)
+                            {
+                                bw.Write(c);
+                            }
+                            b_sameSigns = 1;
+                        }
+                        else                                                                        //Falls es nur 1 Zeichen ist
+                        {
+                            fs_Read.Position = l;                                                   //Muss durch die Bedingung der if davor zurückgestzt werden
+                            bw.Write(br.ReadByte());
+                            b_sameSigns = 1;
+                        }
                     }
                 }
                 else if (b_sameSigns >= 4)                                                      //Falls es die letzte Stelle ist und schon Zeichen davor waren
