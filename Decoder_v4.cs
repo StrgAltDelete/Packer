@@ -22,11 +22,10 @@ namespace Decoder_Alpha
         int contentStartPos;
         string filename;
         string filenameOut;
-        char seperator;
+        byte seperator;
         byte currentByte;
-        long currentPos;
         byte multiplier;
-        char letter;
+        byte letter;
         FileStream fs_read;
         FileStream fs_write;
         BinaryReader br;
@@ -37,12 +36,11 @@ namespace Decoder_Alpha
             magicNumber = " ";
             originalfilename = " ";
             contentStartPos = 0;
-            filename = "T6.txt.fun";
-            filenameOut = "HiOut.fun";
+            filename = "Hi.odt.fun";
+            filenameOut = "Will get set later";
             currentByte = 0;
-            currentPos = 0;
             multiplier = 0;
-            letter = ' ';
+            letter = 0;
 
             fs_read = new FileStream(filename, FileMode.Open, FileAccess.Read);
             br = new BinaryReader(fs_read);
@@ -61,18 +59,21 @@ namespace Decoder_Alpha
             while (fs_read.Position < fs_read.Length)
             {
                 currentByte = br.ReadByte();
-                if (currentByte == seperator && fs_read.Position != fs_read.Length)
+                if (currentByte != '[')
                 {
-                    multiplier = br.ReadByte();
-                    letter = (char)br.ReadByte();
-                    for (int i = 0; i < multiplier; i++)
+                    if (currentByte == seperator && fs_read.Position != fs_read.Length)
                     {
-                        bw.Write(letter);
+                        multiplier = br.ReadByte();
+                        letter = br.ReadByte();
+                        for (int i = 0; i < multiplier; i++)
+                        {
+                            bw.Write(letter);
+                        }
                     }
-                }
-                else
-                {
-                    bw.Write(currentByte);
+                    else
+                    {
+                        bw.Write(currentByte);
+                    }
                 }
             }
 
@@ -93,7 +94,7 @@ namespace Decoder_Alpha
             }
 
 
-            seperator = (char)br.ReadByte(); //Trennzeichen ist immer an der 4. Stelle
+            seperator = br.ReadByte(); //Trennzeichen ist immer an der 4. Stelle
 
             char tmpname = ' ';
             while (br.ReadByte() != '[')
