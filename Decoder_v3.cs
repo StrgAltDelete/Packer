@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 
 namespace Decoder_Alpha
@@ -37,7 +37,7 @@ namespace Decoder_Alpha
             magicNumber = " ";
             originalfilename = " ";
             contentStartPos = 0;
-            filename = "T1_work.fun";
+            filename = "T6.txt.fun";
             filenameOut = "HiOut.fun";
             currentByte = 0;
             currentPos = 0;
@@ -61,7 +61,7 @@ namespace Decoder_Alpha
             while (fs_read.Position < fs_read.Length)
             {
                 currentByte = br.ReadByte();
-                if (currentByte == seperator)
+                if (currentByte == seperator && fs_read.Position != fs_read.Length)
                 {
                     multiplier = br.ReadByte();
                     letter = (char)br.ReadByte();
@@ -103,6 +103,8 @@ namespace Decoder_Alpha
                 originalfilename += tmpname;
                 contentStartPos = (int)fs_read.Position;
             }
+
+            filenameOut = originalfilename;
 
 
             bw.Flush();
