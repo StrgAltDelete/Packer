@@ -15,6 +15,7 @@ namespace Zipper
                 s_originalName = Console.ReadLine();
                 if (File.Exists(s_originalName))                                                //Überprüft ob die Datei exestiert und bricht die Schleife ab wenn ja
                 {
+                    s_file = s_originalName;
                     if (s_originalName.Length > 8)                                              //Überprüft ob der Name gekürtzt werden muss
                         s_file = s_originalName.Remove(8);
                     break;
@@ -70,7 +71,7 @@ namespace Zipper
         }
         private void MagicNumber()                                                          /*Identikator, dass es unsere .fun-Datei ist*/
         {
-            fs_Write = new FileStream(s_name, FileMode.Create);                             
+            fs_Write = new FileStream(s_name, FileMode.Create);
             bw = new BinaryWriter(fs_Write);
             foreach (char c in s_prefix)                                                        //Setzt unsere MagicLine
                 bw.Write(c);
@@ -117,7 +118,7 @@ namespace Zipper
             byte b_sameSigns = 1;                                                               //Zählt die Anzahl an gleichen Zeichen, startet bei 1, da der Ausgangspunkt nicht mitgezählt wird
             for (long l = 0; l < fs_Read.Length; l++)                                           //Durch die Datei lesen
             {
-                fs_Read.Position = l;                           
+                fs_Read.Position = l;
                 if (l != fs_Read.Length - 1)                                                    //Wenn es nicht das letzte Zeichen ist
                 {
                     if (b_sameSigns >= 4 && br.ReadByte() != br.ReadByte())                     //Wenn das nächste Byte nicht mehr genauso wie das aktuelle ist und sich unser packing lohnt
@@ -126,7 +127,7 @@ namespace Zipper
                         bw.Write(c_sign);
                         bw.Write(b_sameSigns);
                         bw.Write(br.ReadByte());
-                        b_sameSigns = 1;                         
+                        b_sameSigns = 1;
                         continue;                                                               //Damit es nicht nochmal des Zeichen von der else darunter schreibt
                     }
                     fs_Read.Position = l;                                                       //Muss durch die Bedingung der if zurückgestzt werden
@@ -159,7 +160,7 @@ namespace Zipper
                 else
                 {
                     bw.Write(br.ReadByte());                                                    //Falls es die letzte Stelle ist und es ein einzelnes Zeichen ist
-                }   
+                }
             }
         }
     }
