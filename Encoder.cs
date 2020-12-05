@@ -122,7 +122,7 @@ namespace Zipper
             }
             byte b_bestPos = 0;
             byte b_bestValue = 255;
-            for (byte b = 0; b < ab_signs.Length; b++)
+            for (byte b = 1; b < ab_signs.Length; b++)                                          //Weil Byte 0 (also NULL) nicht funtioniert
             {
                 if (ab_signs[b] == 0)
                     return b;
@@ -140,7 +140,7 @@ namespace Zipper
                 fs_Read.Position = l;
                 if (l != fs_Read.Length - 1)                                                    //Wenn es nicht das letzte Zeichen ist
                 {
-                    if (b_sameSigns >= 4 && br.ReadByte() != br.ReadByte())                     //Wenn das nächste Byte nicht mehr genauso wie das aktuelle ist und sich unser packing lohnt
+                    if ((b_sameSigns >= 4 && br.ReadByte() != br.ReadByte()) || b_sameSigns == 255)                     //Wenn das nächste Byte nicht mehr genauso wie das aktuelle ist und sich unser packing lohnt
                     {
                         fs_Read.Position = l;                                                   //Muss durch die Bedingung der if zurückgestzt werden
                         bw.Write(b_sign);
