@@ -21,7 +21,7 @@ namespace Zipper
                     break;
                 }
             }
-            Encoder encoder = new Encoder(s_originalName, s_file, '{');
+            Encoder encoder = new Encoder(s_originalName, s_file);
             if (encoder.Exist() == true)                                                        //Wenn die .fun-Zieldatei noch nicht exestiert wird eine erstellt
             {
                 encoder.Encoding();
@@ -34,15 +34,16 @@ namespace Zipper
         string s_file;                                                                          //Dateiname
         string s_name;                                                                          //Dateinname für.fun
         byte b_sign;                                                                            //Trennzeichen
+        byte[] ab_signs = new byte[256];
         FileStream fs_Write;                                                                    //Stream zum Setzen der Datei
         FileStream fs_Read;                                                                     //Stream zum Lesen der Datei
         BinaryReader br;
         BinaryWriter bw;
 
-        public Encoder(string s_originalName, string s_name, char c_sign)                   /*Konstruktor*/
+        public Encoder(string s_originalName, string s_name)                   /*Konstruktor*/
         {
             this.s_file = s_originalName;
-            this.b_sign = (byte)c_sign;
+            this.b_sign = Sign();
             Name(s_name);
         }
         private void Name(string s_name)                                                    /*Name der Datei speichern*/
@@ -111,10 +112,28 @@ namespace Zipper
             fs_Write.Close();
             fs_Read.Close();
         }
-        private void Algorythm()                                                            /*Der endgültige Decoder-Algorythmus*/
+        private byte Sign()
         {
             fs_Read = new FileStream(s_file, FileMode.Open);
             br = new BinaryReader(fs_Read);
+            while (fs_Read.Position < fs_Read.Length)
+            {
+                ab_signs[br.ReadByte()]++;
+            }
+            byte b_bestPos = 0;
+            byte b_bestValue = 255;
+            for (byte b = 0; b < ab_signs.Length; b++)
+            {
+                if (ab_signs[b] == 0)
+                    return b;
+                else if (ab_signs[b] < b_bestValue)
+                    b_bestValue = ab_signs[b];
+                    b_bestPos = b;
+            }
+            return ab_signs[b_bestPos];
+        }
+        private void Algorythm()                                                            /*Der endgültige Encoder-Algorythmus*/
+        {
             byte b_sameSigns = 1;                                                               //Zählt die Anzahl an gleichen Zeichen, startet bei 1, da der Ausgangspunkt nicht mitgezählt wird
             for (long l = 0; l < fs_Read.Length; l++)                                           //Durch die Datei lesen
             {
