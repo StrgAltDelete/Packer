@@ -33,7 +33,7 @@ namespace Zipper
         string s_prefix = "MOIN";                                                               //Dateipräfix zur Identifikation als unsere Datei (MagicNumber)
         string s_file;                                                                          //Dateiname
         string s_name;                                                                          //Dateinname für.fun
-        char c_sign;                                                                            //Trennzeichen
+        byte b_sign;                                                                            //Trennzeichen
         FileStream fs_Write;                                                                    //Stream zum Setzen der Datei
         FileStream fs_Read;                                                                     //Stream zum Lesen der Datei
         BinaryReader br;
@@ -42,7 +42,7 @@ namespace Zipper
         public Encoder(string s_originalName, string s_name, char c_sign)                   /*Konstruktor*/
         {
             this.s_file = s_originalName;
-            this.c_sign = c_sign;
+            this.b_sign = (byte)c_sign;
             Name(s_name);
         }
         private void Name(string s_name)                                                    /*Name der Datei speichern*/
@@ -73,35 +73,35 @@ namespace Zipper
         {
             fs_Write = new FileStream(s_name, FileMode.Create);
             bw = new BinaryWriter(fs_Write);
-            foreach (char c in s_prefix)                                                        //Setzt unsere MagicLine
-                bw.Write((byte)c);
+            foreach (byte b in s_prefix)                                                        //Setzt unsere MagicLine
+                bw.Write(b);
         }
         private void Name()                                                               /*Schreibt den evtl gekürtzten Dateinamen in den Header*/
         {
-            foreach (char c in s_name)                                                      //geht durch den Namen der .fun Datei
+            foreach (byte b in s_name)                                                      //geht durch den Namen der .fun Datei
             {
                 bool b_dot = false;
-                if (c == '.')                                                               //Wenn es . erreicht wechselt es zur originellen Datei
+                if (b == '.')                                                               //Wenn es . erreicht wechselt es zur originellen Datei
                 {
                     b_dot = true;
                     bool b_dot2 = false;
-                    foreach (char c2 in s_file)                                             //Geht durch die originelle Datei
+                    foreach (byte b2 in s_file)                                             //Geht durch die originelle Datei
                     {
-                        if (c2 == '.')                                                      //Wenn es . erreicht wird die Dateiendung in die .fun-Datei geschrieben
+                        if (b2 == '.')                                                      //Wenn es . erreicht wird die Dateiendung in die .fun-Datei geschrieben
                             b_dot2 = true;
                         if (b_dot2 == true)
-                            bw.Write((byte)c2);
+                            bw.Write(b2);
                     }
                 }
                 if (b_dot == true)
                     break;
-                bw.Write((byte)c);
+                bw.Write(b);
             }
             bw.Write((byte)'[');                                                                      //Identikator für das Ende des Namens der originellen Datei (Festgelegt)
         }
         private void Seperator()                                                            /*Schreibt das Trennzeichen in den Header*/
         {
-            bw.Write((byte)c_sign);
+            bw.Write(b_sign);
         }
         private void Done()                                                                 /*Schliesst und leer alle offenen Streams*/
         {
@@ -124,46 +124,45 @@ namespace Zipper
                     if (b_sameSigns >= 4 && br.ReadByte() != br.ReadByte())                     //Wenn das nächste Byte nicht mehr genauso wie das aktuelle ist und sich unser packing lohnt
                     {
                         fs_Read.Position = l;                                                   //Muss durch die Bedingung der if zurückgestzt werden
-                        bw.Write((byte)c_sign);
+                        bw.Write(b_sign);
                         bw.Write(b_sameSigns);
                         bw.Write(br.ReadByte());
                         b_sameSigns = 1;
                         continue;                                                               //Damit es nicht nochmal des Zeichen von der else darunter schreibt
                     }
                     fs_Read.Position = l;                                                       //Muss durch die Bedingung der if zurückgestzt werden
-                    if (br.ReadByte() == (byte)c_sign)
+                    if (br.ReadByte() == b_sign)
                     {
-                        bw.Write((byte)c_sign);
+                        bw.Write(b_sign);
                         bw.Write(b_sameSigns);
-                        bw.Write((byte)c_sign);
+                        bw.Write(b_sign);
+                        continue;                                                               //Damit es nicht nochmal des Zeichen von der else darunter schreibt
                     }
-                    else                                                                            //Else statt else if, damit die Position zurückgesetzt werden kann
+                    fs_Read.Position = l;
+                    if (br.ReadByte() == br.ReadByte())                                         //Wenn das darauf folgende Byte das selbe ist
+                    {
+                        b_sameSigns++;
+                    }
+                    else if (b_sameSigns > 1)                                                   //Falls es mehrere Zeichen einer Art sind, aber nicht genug zum packen
                     {
                         fs_Read.Position = l;
-                        if (br.ReadByte() == br.ReadByte())                                         //Wenn das darauf folgende Byte das selbe ist
+                        byte b = br.ReadByte();
+                        for (byte i2 = b_sameSigns; i2 > 0; i2--)
                         {
-                            b_sameSigns++;
+                            bw.Write(b);
                         }
-                        else if (b_sameSigns > 1)                                                   //Falls es mehrere Zeichen einer Art sind, aber nicht genug zum packen
-                        {
-                            byte b = br.ReadByte();
-                            for (byte i2 = b_sameSigns; i2 > 0; i2--)
-                            {
-                                bw.Write(b);
-                            }
-                            b_sameSigns = 1;
-                        }
-                        else                                                                        //Falls es nur 1 Zeichen ist
-                        {
-                            fs_Read.Position = l;                                                   //Muss durch die Bedingung der if davor zurückgestzt werden
-                            bw.Write(br.ReadByte());
-                            b_sameSigns = 1;
-                        }
+                        b_sameSigns = 1;
+                    }
+                    else                                                                        //Falls es nur 1 Zeichen ist
+                    {
+                        fs_Read.Position = l;                                                   //Muss durch die Bedingung der if davor zurückgestzt werden
+                        bw.Write(br.ReadByte());
+                        b_sameSigns = 1;
                     }
                 }
                 else if (b_sameSigns >= 4)                                                      //Falls es die letzte Stelle ist und schon Zeichen davor waren
                 {
-                    bw.Write((byte)c_sign);
+                    bw.Write(b_sign);
                     bw.Write(b_sameSigns);
                     bw.Write(br.ReadByte());
                 }
