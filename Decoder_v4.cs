@@ -9,9 +9,7 @@ namespace Decoder_Alpha
         {
             Decoder someOtherClass = new Decoder();
             someOtherClass.GetHeaderInfo();
-            someOtherClass.Alorithm();
-
-            Console.ReadKey();
+            someOtherClass.Algorithm();
         }
     }
 
@@ -36,7 +34,7 @@ namespace Decoder_Alpha
             magicNumber = " ";
             originalfilename = " ";
             contentStartPos = 0;
-            filename = "Hi.odt.fun";
+            filename = "frames.j.fun";
             filenameOut = "Will get set later";
             currentByte = 0;
             multiplier = 0;
@@ -48,7 +46,7 @@ namespace Decoder_Alpha
             bw = new BinaryWriter(fs_write);
         }
 
-        public void Alorithm()
+        public void Algorithm()
         {
             fs_read = new FileStream(filename, FileMode.Open, FileAccess.Read);
             fs_write = new FileStream(filenameOut, FileMode.Create, FileAccess.Write);
@@ -59,8 +57,6 @@ namespace Decoder_Alpha
             while (fs_read.Position < fs_read.Length)
             {
                 currentByte = br.ReadByte();
-                if (currentByte != '[')
-                {
                     if (currentByte == seperator && fs_read.Position != fs_read.Length)
                     {
                         multiplier = br.ReadByte();
@@ -74,7 +70,6 @@ namespace Decoder_Alpha
                     {
                         bw.Write(currentByte);
                     }
-                }
             }
 
             fs_read.Flush();
@@ -102,8 +97,9 @@ namespace Decoder_Alpha
                 fs_read.Position--;
                 tmpname = (char)br.ReadByte();
                 originalfilename += tmpname;
-                contentStartPos = (int)fs_read.Position;
             }
+
+            contentStartPos = (int)fs_read.Position;
 
             filenameOut = originalfilename;
 
@@ -115,10 +111,6 @@ namespace Decoder_Alpha
             fs_read.Close();
             bw.Close();
             br.Close();
-
-
-            //bw.Write(magicNumber + seperator + ending);                   //Schreibt die Magic Number, Seperator und die Ending Var in eine .txt Datei
-            Console.Write(magicNumber + "\r\n" + seperator + "\r\n" + originalfilename);
         }
     }
 }
