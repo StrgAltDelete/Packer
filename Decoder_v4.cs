@@ -34,7 +34,7 @@ namespace Decoder_Alpha
             magicNumber = " ";
             originalfilename = " ";
             contentStartPos = 0;
-            filename = "frames.j.fun";
+            filename = "T8.txt.fun";
             filenameOut = "Will get set later";
             currentByte = 0;
             multiplier = 0;
