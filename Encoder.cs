@@ -128,17 +128,22 @@ namespace Zipper
                     return b;
                 else if (ab_signs[b] < b_bestValue)
                     b_bestValue = ab_signs[b];
-                    b_bestPos = b;
+                b_bestPos = b;
+                if (b == 255)
+                {
+                    break;
+                }
             }
             return ab_signs[b_bestPos];
         }
         private void Algorythm()                                                            /*Der endgültige Encoder-Algorythmus*/
         {
             byte b_sameSigns = 1;                                                               //Zählt die Anzahl an gleichen Zeichen, startet bei 1, da der Ausgangspunkt nicht mitgezählt wird
-            for (long l = 0; l < fs_Read.Length; l++)                                           //Durch die Datei lesen
+            long l_length = fs_Read.Length;
+            for (long l = 0; l < l_length; l++)                                           //Durch die Datei lesen
             {
                 fs_Read.Position = l;
-                if (l != fs_Read.Length - 1)                                                    //Wenn es nicht das letzte Zeichen ist
+                if (l != l_length - 1)                                                    //Wenn es nicht das letzte Zeichen ist
                 {
                     if ((b_sameSigns >= 4 && br.ReadByte() != br.ReadByte()) || b_sameSigns == 255)                     //Wenn das nächste Byte nicht mehr genauso wie das aktuelle ist und sich unser packing lohnt
                     {
