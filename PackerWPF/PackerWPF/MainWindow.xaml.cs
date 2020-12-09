@@ -1,18 +1,6 @@
 ﻿using System;
 using System.IO;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace PackerWPF
 {
@@ -22,6 +10,7 @@ namespace PackerWPF
     public partial class MainWindow : Window
     {
         Microsoft.Win32.OpenFileDialog fileDialog;
+        string s_filePath;
         string s_fileName;
         public MainWindow()
         {
@@ -33,69 +22,90 @@ namespace PackerWPF
             fileDialog = new Microsoft.Win32.OpenFileDialog();
             bool b_exist = (bool)fileDialog.ShowDialog();
             if (b_exist == true)
-                s_fileName = fileDialog.FileName;
+            {
+                s_filePath = fileDialog.FileName;
+                s_fileName = "";    //Sonst stackt sich der Name wenn man mehrere Dateikonvertierungen macht
+                for (int i = fileDialog.FileName.Length - 1; i > 0; i--)
+                {
+                    if(fileDialog.FileName[i] == '\\')
+                    {
+                        break;
+                    }
+                    s_fileName += fileDialog.FileName[i];
+                }
+            }
+            char[] ac_fileName = s_fileName.ToCharArray();
+            Array.Reverse(ac_fileName);
+            s_fileName = new string(ac_fileName);
         }
 
         private void btn_encode_Click(object sender, RoutedEventArgs e)
         {
             string s_file = "";
             s_file = s_fileName;
-            if (s_fileName.Length > 8)                                              //Überprüft ob der Name gekürtzt werden muss
+            if (s_fileName.Length > 8)  //Überprüft ob der Name gekürtzt werden muss
                 s_file = s_fileName.Remove(8);
-            Encoder encoder = new Encoder(s_fileName, s_file);
-            if (encoder.Exist() == true)                                                        //Wenn die .fun-Zieldatei noch nicht exestiert wird eine erstellt
+            Encoder encoder = new Encoder(s_filePath, s_file);
+            if (encoder.Exist() == true)    //Wenn die .fun-Zieldatei noch nicht exestiert wird eine erstellt
             {
                 encoder.Encoding();
             }
         }
+
+        private void btn_decode_Click(object sender, RoutedEventArgs e)
+        {
+            Decoder decoder = new Decoder(s_fileName);
+            decoder.GetHeaderInfo();
+            decoder.Algorithm();
+        }
     }
     public class Encoder
     {
-        string s_prefix = "MOIN";                                                               //Dateipräfix zur Identifikation als unsere Datei (MagicNumber)
-        string s_file;                                                                          //Dateiname
-        string s_name;                                                                          //Dateinname für.fun
-        byte b_sign;                                                                            //Trennzeichen
+        string s_prefix = "MOIN";                                                               
+        string s_file;  //Dateiname
+        string s_name;  //Dateinname für.fun
+        byte b_sign;    //Trennzeichen
         byte[] ab_signs = new byte[256];
-        FileStream fs_Write;                                                                    //Stream zum Setzen der Datei
-        FileStream fs_Read;                                                                     //Stream zum Lesen der Datei
+        FileStream fs_Write;                                                                    
+        FileStream fs_Read;                                                                     
         BinaryReader br;
         BinaryWriter bw;
 
-        public Encoder(string s_originalName, string s_name)                   /*Konstruktor*/
+        public Encoder(string s_originalName, string s_name)                   
         {
             this.s_file = s_originalName;
             this.b_sign = Sign();
             Name(s_name);
         }
-        private void Name(string s_name)                                                    /*Name der Datei speichern*/
+        private void Name(string s_name)                                                    
         {
-            s_name += ".fun";                                                                   //Gekürtzer Name + neue Dateiendung
+            s_name += ".fun";   //Gekürtzer Name + neue Dateiendung
             this.s_name = s_name;
         }
-        public bool Exist()                                                                 /*Überprüft ob die .fun Datei bereits exestiert und gibt false zurück wenn sie bereits exestiert und true wenn nicht*/
+        public bool Exist()
         {
-            if (!File.Exists(s_name))                                                           //Überprüft ob die neue .fun Datei bereits exestiert
-                return true;                                                                    //Gibt true zurück, da mit dem encoden fortgefahren werden kann
+            if (!File.Exists(s_name))   //Überprüft ob die neue .fun Datei bereits exestiert
+                return true;                                                                    
             else
-                return false;                                                                   //Gibt false zurück, da die Datei überschrieben werden würde
+                return false;                                                                   
         }
-        public void Encoding()                                                              /*Ruft alle notwendigen Methoden zum encoden auf*/
+        public void Encoding()  //Ruft alle notwendigen Methoden zum encoden auf
         {
             Prefix();
             Algorythm();
             Done();
         }
-        private void Prefix()                                                               /*Ruft alle notwendigen Methoden zum setzen des Headers auf*/
+        private void Prefix()   //Ruft alle notwendigen Methoden zum setzen des Headers auf
         {
             MagicNumber();
             Seperator();
             Name();
         }
-        private void MagicNumber()                                                          /*Identikator, dass es unsere .fun-Datei ist*/
+        private void MagicNumber()                                                          
         {
             fs_Write = new FileStream(s_name, FileMode.Create);
             bw = new BinaryWriter(fs_Write);
-            foreach (byte b in s_prefix)                                                        //Setzt unsere MagicLine
+            foreach (byte b in s_prefix)    //Setzt unsere MagicLine
                 bw.Write(b);
         }
         private void Name()                                                               /*Schreibt den evtl gekürtzten Dateinamen in den Header*/
@@ -216,6 +226,92 @@ namespace PackerWPF
                     bw.Write(br.ReadByte());                                                    //Falls es die letzte Stelle ist und es ein einzelnes Zeichen ist
                 }
             }
+        }
+    }
+    class Decoder
+    {
+        string magicNumber;
+        string originalfilename;
+        int contentStartPos;
+        string filename;
+        string filenameOut;
+        byte seperator;
+        byte currentByte;
+        byte multiplier;
+        byte letter;
+        FileStream fs_read;
+        FileStream fs_write;
+        BinaryReader br;
+        BinaryWriter bw;
+
+        public Decoder(string filename)    //Konstruktor
+        {
+            this.filename = filename;
+        }
+
+        public void Algorithm()
+        {
+            fs_read = new FileStream(filename, FileMode.Open, FileAccess.Read);
+            fs_write = new FileStream(filenameOut, FileMode.Create, FileAccess.Write);
+            br = new BinaryReader(fs_read);
+            bw = new BinaryWriter(fs_write);
+
+            fs_read.Position = contentStartPos;
+            while (fs_read.Position < fs_read.Length)
+            {
+                currentByte = br.ReadByte();
+                if (currentByte == seperator && fs_read.Position != fs_read.Length)
+                {
+                    multiplier = br.ReadByte();
+                    letter = br.ReadByte();
+                    for (int i = 0; i < multiplier; i++)
+                    {
+                        bw.Write(letter);
+                    }
+                }
+                else
+                {
+                    bw.Write(currentByte);
+                }
+            }
+
+            fs_read.Flush();
+            bw.Flush();
+            fs_read.Close();
+            bw.Close();
+            br.Close();
+        }
+
+        public void GetHeaderInfo()         //Methode ermittelt die magicNumber, seperator, ending und die contentStartPos Variablen
+        {
+            fs_read = new FileStream(filename, FileMode.Open, FileAccess.Read);
+            br = new BinaryReader(fs_read);
+            char tmpmagic = ' ';
+            for (int i = 0; i < 4; i++)  //get Magic Number
+            {
+                tmpmagic = (char)br.ReadByte();
+                magicNumber += tmpmagic;
+            }
+
+
+            seperator = br.ReadByte(); //Trennzeichen ist immer an der 4. Stelle
+
+            char tmpname = ' ';
+            while (br.ReadByte() != '[')
+            {
+                fs_read.Position--;
+                tmpname = (char)br.ReadByte();
+                originalfilename += tmpname;
+            }
+
+            contentStartPos = (int)fs_read.Position;
+
+            filenameOut = originalfilename;
+
+
+            fs_read.Flush();
+            fs_read.Close();
+            br.Close();
         }
     }
 }

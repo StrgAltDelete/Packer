@@ -9,7 +9,7 @@
     <Grid>
         <Button x:Name="btn_files" Content="Datei zum kovertieren" HorizontalAlignment="Left" Margin="325,186,0,0" VerticalAlignment="Top" Width="136" Click="btn_files_Click" Height="27"/>
         <Button x:Name="btn_encode" Content="Packen" HorizontalAlignment="Left" Margin="56,186,0,0" VerticalAlignment="Top" Width="136" Height="27" Click="btn_encode_Click"/>
-        <Button x:Name="btn_decode" Content="Entpacken" HorizontalAlignment="Left" Margin="588,186,0,0" VerticalAlignment="Top" Width="136" Height="27"/>
+        <Button x:Name="btn_decode" Content="Entpacken" HorizontalAlignment="Left" Margin="588,186,0,0" VerticalAlignment="Top" Width="136" Height="27" Click="btn_decode_Click"/>
 
     </Grid>
 </Window>
