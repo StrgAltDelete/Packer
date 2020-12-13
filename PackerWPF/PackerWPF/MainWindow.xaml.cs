@@ -55,8 +55,7 @@ namespace PackerWPF
         private void btn_decode_Click(object sender, RoutedEventArgs e)
         {
             Decoder decoder = new Decoder(s_fileName);
-            decoder.GetHeaderInfo();
-            decoder.Algorithm();
+            decoder.CallMethods();
         }
     }
     public class Encoder
@@ -239,6 +238,7 @@ namespace PackerWPF
         byte currentByte;
         byte multiplier;
         byte letter;
+        bool b_PrefixValid;
         FileStream fs_read;
         FileStream fs_write;
         BinaryReader br;
@@ -247,6 +247,23 @@ namespace PackerWPF
         public Decoder(string filename)    //Konstruktor
         {
             this.filename = filename;
+        }
+
+        public void CallMethods()
+        {
+            GetPrefix();
+            if(File.Exists(filenameOut)) // Popup FileAlreadyExists
+            {
+
+            }
+            if(b_PrefixValid == true)
+            {
+                Algorithm();
+            }
+            else //To do: Popup
+            {
+
+            }
         }
 
         public void Algorithm()
@@ -282,25 +299,31 @@ namespace PackerWPF
             br.Close();
         }
 
-        public void GetHeaderInfo()         //Methode ermittelt die magicNumber, seperator, ending und die contentStartPos Variablen
+        public void GetPrefix()         //Methode ermittelt die magicNumber, seperator, ending und die contentStartPos Variablen
         {
             fs_read = new FileStream(filename, FileMode.Open, FileAccess.Read);
             br = new BinaryReader(fs_read);
-            char tmpmagic = ' ';
             for (int i = 0; i < 4; i++)  //get Magic Number
             {
-                tmpmagic = (char)br.ReadByte();
-                magicNumber += tmpmagic;
+                magicNumber += (char)br.ReadByte();
             }
 
+            if(magicNumber == "MOIN")
+            {
+                b_PrefixValid = true;
+            }
+            else
+            {
+                b_PrefixValid = false;
+            }
 
             seperator = br.ReadByte(); //Trennzeichen ist immer an der 4. Stelle
 
-            char tmpname = ' ';
+            byte tmpname = 0;
             while (br.ReadByte() != '[')
             {
                 fs_read.Position--;
-                tmpname = (char)br.ReadByte();
+                tmpname = br.ReadByte();
                 originalfilename += tmpname;
             }
 
