@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Windows;
+using System.Threading;
 
 namespace PackerWPF
 {
@@ -15,6 +16,8 @@ namespace PackerWPF
         public MainWindow()
         {
             InitializeComponent();
+            btn_encode.IsEnabled = false;
+            btn_decode.IsEnabled = false;
         }
 
         private void btn_files_Click(object sender, RoutedEventArgs e)
@@ -23,6 +26,8 @@ namespace PackerWPF
             bool b_exist = (bool)fileDialog.ShowDialog();
             if (b_exist == true)
             {
+                btn_encode.IsEnabled = true;
+                btn_decode.IsEnabled = true;
                 s_filePath = fileDialog.FileName;
                 s_fileName = "";    //Sonst stackt sich der Name wenn man mehrere Dateikonvertierungen macht
                 for (int i = fileDialog.FileName.Length - 1; i > 0; i--)
@@ -33,38 +38,46 @@ namespace PackerWPF
                     }
                     s_fileName += fileDialog.FileName[i];
                 }
+                char[] ac_fileName = s_fileName.ToCharArray();
+                Array.Reverse(ac_fileName);
+                s_fileName = new string(ac_fileName);
+                txt_name.Text = "Ausgewählte Datei:\n" + s_fileName;
             }
-            char[] ac_fileName = s_fileName.ToCharArray();
-            Array.Reverse(ac_fileName);
-            s_fileName = new string(ac_fileName);
         }
-
         private void btn_encode_Click(object sender, RoutedEventArgs e)
         {
-            string s_file = "";
-            s_file = s_fileName;
+            string s_file = s_fileName;
             if (s_fileName.Length > 8)  //Überprüft ob der Name gekürtzt werden muss
                 s_file = s_fileName.Remove(8);
             Encoder encoder = new Encoder(s_filePath, s_file);
             if (encoder.Exist() == true)    //Wenn die .fun-Zieldatei noch nicht exestiert wird eine erstellt
             {
                 encoder.Encoding();
+                txt_messages.Foreground = System.Windows.Media.Brushes.DarkGreen;
+                txt_messages.Text = "Datei erfolgreich komprimiert";
+            }
+            else
+            {
+                txt_messages.Foreground = System.Windows.Media.Brushes.DarkRed;
+                txt_messages.Text = "Datei existiert bereits";
             }
         }
 
         private void btn_decode_Click(object sender, RoutedEventArgs e)
         {
-            Decoder decoder = new Decoder(s_fileName);
-            decoder.CallMethods();
+            Decoder decoder = new Decoder(s_filePath);
+            decoder.CallMethods(ref txt_messages);
         }
     }
     public class Encoder
     {
         string s_prefix = "MOIN";                                                               
-        string s_file;  //Dateiname
-        string s_name;  //Dateinname für.fun
+        string s_Path;  //Dateiname mit Pfad
+        string s_name;  //Dateiname (gekürtzt)
+        string s_ending;    //Dateiendung
+        string s_fun;  //Dateinname für.fun
         byte b_sign;    //Trennzeichen
-        byte[] ab_signs = new byte[256];
+        byte[] ab_signs = new byte[256];    //Array zur Ermittlung des besten Trennzeichens
         FileStream fs_Write;                                                                    
         FileStream fs_Read;                                                                     
         BinaryReader br;
@@ -72,24 +85,25 @@ namespace PackerWPF
 
         public Encoder(string s_originalName, string s_name)                   
         {
-            this.s_file = s_originalName;
-            this.b_sign = Sign();
+            this.s_Path = s_originalName;
+            this.s_name = s_name;
             Name(s_name);
         }
         private void Name(string s_name)                                                    
         {
             s_name += ".fun";   //Gekürtzer Name + neue Dateiendung
-            this.s_name = s_name;
+            this.s_fun = s_name;
         }
         public bool Exist()
         {
-            if (!File.Exists(s_name))   //Überprüft ob die neue .fun Datei bereits exestiert
+            if (!File.Exists(s_fun))   //Überprüft ob die neue .fun Datei bereits exestiert
                 return true;                                                                    
             else
                 return false;                                                                   
         }
         public void Encoding()  //Ruft alle notwendigen Methoden zum encoden auf
         {
+            this.b_sign = Sign();
             Prefix();
             Algorythm();
             Done();
@@ -102,32 +116,32 @@ namespace PackerWPF
         }
         private void MagicNumber()                                                          
         {
-            fs_Write = new FileStream(s_name, FileMode.Create);
+            fs_Write = new FileStream(s_fun, FileMode.Create);
             bw = new BinaryWriter(fs_Write);
             foreach (byte b in s_prefix)    //Setzt unsere MagicLine
                 bw.Write(b);
         }
         private void Name()                                                               /*Schreibt den evtl gekürtzten Dateinamen in den Header*/
         {
-            foreach (byte b in s_name)                                                      //geht durch den Namen der .fun Datei
+            for (int i = s_Path.Length - 1; i > 0; i--)
             {
-                bool b_dot = false;
-                if (b == '.')                                                               //Wenn es . erreicht wechselt es zur originellen Datei
+                if(s_Path[i] == '.')
                 {
-                    b_dot = true;
-                    bool b_dot2 = false;
-                    foreach (byte b2 in s_file)                                             //Geht durch die originelle Datei
+                    for (int j = i; j < s_Path.Length; j++)
                     {
-                        if (b2 == '.')                                                      //Wenn es . erreicht wird die Dateiendung in die .fun-Datei geschrieben
-                            b_dot2 = true;
-                        if (b_dot2 == true)
-                            bw.Write(b2);
+                        s_ending += s_Path[j];
                     }
-                }
-                if (b_dot == true)
+                    if(s_ending.Length > 5) //Datei wird auf 4 Zeichen gekürtzt, 5 weil der Punkt dazuzählt
+                    {
+                        this.s_ending = s_ending.Remove(5);
+                    }
                     break;
-                bw.Write(b);
+                }
             }
+            foreach (byte b in s_name)
+                bw.Write(b);
+            foreach (byte b in s_ending)
+                bw.Write(b);
             bw.Write((byte)'[');                                                                      //Identikator für das Ende des Namens der originellen Datei (Festgelegt)
         }
         private void Seperator()                                                            /*Schreibt das Trennzeichen in den Header*/
@@ -144,7 +158,7 @@ namespace PackerWPF
         }
         private byte Sign()
         {
-            fs_Read = new FileStream(s_file, FileMode.Open);
+            fs_Read = new FileStream(s_Path, FileMode.Open);
             br = new BinaryReader(fs_Read);
             while (fs_Read.Position < fs_Read.Length)
             {
@@ -249,12 +263,13 @@ namespace PackerWPF
             this.filename = filename;
         }
 
-        public void CallMethods()
+        public void CallMethods(ref System.Windows.Controls.TextBlock txt_messages)
         {
             GetPrefix();
             if(File.Exists(filenameOut)) // Popup FileAlreadyExists
             {
-
+                txt_messages.Foreground = System.Windows.Media.Brushes.DarkRed;
+                txt_messages.Text = "Datei existiert bereits";
             }
             if(b_PrefixValid == true)
             {
@@ -262,7 +277,8 @@ namespace PackerWPF
             }
             else //To do: Popup
             {
-
+                txt_messages.Foreground = System.Windows.Media.Brushes.DarkRed;
+                txt_messages.Text = "Keine gültige Datei";
             }
         }
 
@@ -272,7 +288,6 @@ namespace PackerWPF
             fs_write = new FileStream(filenameOut, FileMode.Create, FileAccess.Write);
             br = new BinaryReader(fs_read);
             bw = new BinaryWriter(fs_write);
-
             fs_read.Position = contentStartPos;
             while (fs_read.Position < fs_read.Length)
             {
@@ -303,12 +318,31 @@ namespace PackerWPF
         {
             fs_read = new FileStream(filename, FileMode.Open, FileAccess.Read);
             br = new BinaryReader(fs_read);
-            for (int i = 0; i < 4; i++)  //get Magic Number
+            for (int i = 0; i < 4; i++)  //Die ersten vier Zeichen der Datei werden ausgelesen und als Magic Number gespeichert
             {
                 magicNumber += (char)br.ReadByte();
             }
 
-            if(magicNumber == "MOIN")
+            seperator = br.ReadByte(); //Trennzeichen ist immer an der 4. Stelle
+
+            byte tmpname = 0;
+            while (br.ReadByte() != '[')    //Bis das Zeichen erkannt wird, welches das Ende des Headers markiert, wird der Dateiname mit Endung abgespeichert
+            {
+                fs_read.Position--;
+                tmpname = br.ReadByte();
+                originalfilename += (char)tmpname;  //Der Originaldateiname wird gespeichert
+            }
+            contentStartPos = (int)fs_read.Position;
+            filenameOut = originalfilename; //Filename wird auf das Original gesetzt
+
+            int i_dotIndex = filename.IndexOf('.');
+            string s_ending = "";
+            for (int i = filename.Length - 3; i < filename.Length; i++)
+            {
+                s_ending += filename[i];
+            }
+
+            if (magicNumber == "MOIN" && s_ending == "fun")   //Es wird überprüft, ob alle Elemente im Prefix passen
             {
                 b_PrefixValid = true;
             }
@@ -316,21 +350,6 @@ namespace PackerWPF
             {
                 b_PrefixValid = false;
             }
-
-            seperator = br.ReadByte(); //Trennzeichen ist immer an der 4. Stelle
-
-            byte tmpname = 0;
-            while (br.ReadByte() != '[')
-            {
-                fs_read.Position--;
-                tmpname = br.ReadByte();
-                originalfilename += tmpname;
-            }
-
-            contentStartPos = (int)fs_read.Position;
-
-            filenameOut = originalfilename;
-
 
             fs_read.Flush();
             fs_read.Close();

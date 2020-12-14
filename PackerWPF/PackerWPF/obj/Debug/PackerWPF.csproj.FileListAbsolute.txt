@@ -27,3 +27,18 @@ C:\Users\Yannick\Desktop\WPFProject Stuff\Packer-main\PackerWPF\PackerWPF\obj\De
 C:\Users\Yannick\Desktop\WPFProject Stuff\Packer-main\PackerWPF\PackerWPF\obj\Debug\PackerWPF.csproj.GenerateResource.cache
 C:\Users\Yannick\Desktop\WPFProject Stuff\Packer-main\PackerWPF\PackerWPF\obj\Debug\PackerWPF.exe
 C:\Users\Yannick\Desktop\WPFProject Stuff\Packer-main\PackerWPF\PackerWPF\obj\Debug\PackerWPF.pdb
+C:\Users\Peter\Source\Repos\Packer\PackerWPF\PackerWPF\bin\Debug\PackerWPF.exe.config
+C:\Users\Peter\Source\Repos\Packer\PackerWPF\PackerWPF\bin\Debug\PackerWPF.exe
+C:\Users\Peter\Source\Repos\Packer\PackerWPF\PackerWPF\bin\Debug\PackerWPF.pdb
+C:\Users\Peter\Source\Repos\Packer\PackerWPF\PackerWPF\obj\Debug\PackerWPF.csprojAssemblyReference.cache
+C:\Users\Peter\Source\Repos\Packer\PackerWPF\PackerWPF\obj\Debug\MainWindow.g.cs
+C:\Users\Peter\Source\Repos\Packer\PackerWPF\PackerWPF\obj\Debug\App.g.cs
+C:\Users\Peter\Source\Repos\Packer\PackerWPF\PackerWPF\obj\Debug\PackerWPF_MarkupCompile.cache
+C:\Users\Peter\Source\Repos\Packer\PackerWPF\PackerWPF\obj\Debug\PackerWPF_MarkupCompile.lref
+C:\Users\Peter\Source\Repos\Packer\PackerWPF\PackerWPF\obj\Debug\MainWindow.baml
+C:\Users\Peter\Source\Repos\Packer\PackerWPF\PackerWPF\obj\Debug\PackerWPF.g.resources
+C:\Users\Peter\Source\Repos\Packer\PackerWPF\PackerWPF\obj\Debug\PackerWPF.Properties.Resources.resources
+C:\Users\Peter\Source\Repos\Packer\PackerWPF\PackerWPF\obj\Debug\PackerWPF.csproj.GenerateResource.cache
+C:\Users\Peter\Source\Repos\Packer\PackerWPF\PackerWPF\obj\Debug\PackerWPF.csproj.CoreCompileInputs.cache
+C:\Users\Peter\Source\Repos\Packer\PackerWPF\PackerWPF\obj\Debug\PackerWPF.exe
+C:\Users\Peter\Source\Repos\Packer\PackerWPF\PackerWPF\obj\Debug\PackerWPF.pdb

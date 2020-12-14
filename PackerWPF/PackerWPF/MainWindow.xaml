@@ -5,11 +5,21 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:PackerWPF"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
-        <Button x:Name="btn_files" Content="Datei zum kovertieren" HorizontalAlignment="Left" Margin="325,186,0,0" VerticalAlignment="Top" Width="136" Click="btn_files_Click" Height="27"/>
-        <Button x:Name="btn_encode" Content="Packen" HorizontalAlignment="Left" Margin="56,186,0,0" VerticalAlignment="Top" Width="136" Height="27" Click="btn_encode_Click"/>
-        <Button x:Name="btn_decode" Content="Entpacken" HorizontalAlignment="Left" Margin="588,186,0,0" VerticalAlignment="Top" Width="136" Height="27" Click="btn_decode_Click"/>
-
+        Title="MainWindow" Height="311.351" Width="755">
+    <Grid Background="#FF101820">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="158*"/>
+            <RowDefinition Height="261*"/>
+        </Grid.RowDefinitions>
+        <Button x:Name="btn_files" Content="Datei zum kovertieren" HorizontalAlignment="Left" Margin="299,27,0,0" VerticalAlignment="Top" Width="152" Click="btn_files_Click" Height="43" Background="#FF006B38" BorderBrush="#FF137144" Foreground="White" FontSize="14" Cursor="Hand"/>
+        <Button x:Name="btn_encode" Content="Packen" HorizontalAlignment="Left" Margin="40,27.189,0,0" VerticalAlignment="Top" Width="151.811" Height="42.811" Click="btn_encode_Click" Background="#FF006B38" BorderBrush="#FF393939" Foreground="White" FontSize="14" Cursor="Hand"/>
+        <Button x:Name="btn_decode" Content="Entpacken" HorizontalAlignment="Left" Margin="549,27,40,0" VerticalAlignment="Top" Width="152" Height="43" Click="btn_decode_Click" Background="#FF006B38" BorderBrush="#FF006B38" FontSize="14" Cursor="Hand">
+            <Button.Foreground>
+                <SolidColorBrush Color="White"/>
+            </Button.Foreground>
+        </Button>
+        <TextBlock x:Name="txt_name" Margin="198,104,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Height="74" Width="352" Foreground="White" FontSize="20" HorizontalAlignment="Left" TextAlignment="Center" Grid.RowSpan="2"/>
+        <TextBlock x:Name="txt_messages" HorizontalAlignment="Left" Margin="40,100,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Height="48" Width="661" Foreground="White" Grid.Row="1" FontSize="20" TextAlignment="Center"/>
     </Grid>
 </Window>
+
