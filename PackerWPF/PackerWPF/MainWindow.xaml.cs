@@ -47,6 +47,14 @@ namespace PackerWPF
         private void btn_encode_Click(object sender, RoutedEventArgs e)
         {
             string s_file = s_fileName;
+            for (int i = s_file.Length - 1; i > 0; i--)
+            {
+                if(s_file[i] == '.')
+                {
+                    s_file = s_file.Remove(i - 1);
+                    break;
+                }
+            }
             if (s_fileName.Length > 8)  //Überprüft ob der Name gekürtzt werden muss
                 s_file = s_fileName.Remove(8);
             Encoder encoder = new Encoder(s_filePath, s_file);
@@ -325,17 +333,6 @@ namespace PackerWPF
 
             seperator = br.ReadByte(); //Trennzeichen ist immer an der 4. Stelle
 
-            byte tmpname = 0;
-            while (br.ReadByte() != '[')    //Bis das Zeichen erkannt wird, welches das Ende des Headers markiert, wird der Dateiname mit Endung abgespeichert
-            {
-                fs_read.Position--;
-                tmpname = br.ReadByte();
-                originalfilename += (char)tmpname;  //Der Originaldateiname wird gespeichert
-            }
-            contentStartPos = (int)fs_read.Position;
-            filenameOut = originalfilename; //Filename wird auf das Original gesetzt
-
-            int i_dotIndex = filename.IndexOf('.');
             string s_ending = "";
             for (int i = filename.Length - 3; i < filename.Length; i++)
             {
@@ -350,6 +347,20 @@ namespace PackerWPF
             {
                 b_PrefixValid = false;
             }
+
+            if (b_PrefixValid == true)
+            {
+                byte tmpname = 0;
+                while (br.ReadByte() != '[')    //Bis das Zeichen erkannt wird, welches das Ende des Headers markiert, wird der Dateiname mit Endung abgespeichert
+                {
+                    fs_read.Position--;
+                    tmpname = br.ReadByte();
+                    originalfilename += (char)tmpname;  //Der Originaldateiname wird gespeichert
+                }
+                contentStartPos = (int)fs_read.Position;
+            }
+
+            filenameOut = originalfilename; //Filename wird auf das Original gesetzt
 
             fs_read.Flush();
             fs_read.Close();
