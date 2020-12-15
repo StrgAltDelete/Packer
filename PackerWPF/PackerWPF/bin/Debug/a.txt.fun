@@ -1,1 +1,0 @@
-MOINa.txt.txt[oükdwefaoüpawfekopalfüe#plkaüepkfüpawüefpalfkwplküepf
