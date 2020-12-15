@@ -201,38 +201,38 @@ namespace PackerWPF
             }
             return ab_signs[b_bestPos];
         }
-        private void Algorithm()                                                            /*Der endgültige Encoder-Algorythmus*/
+        private void Algorithm()
         {
-            byte b_sameSigns = 1;                                                               //Zählt die Anzahl an gleichen Zeichen, startet bei 1, da der Ausgangspunkt nicht mitgezählt wird
+            byte b_sameSigns = 1;   //Startet bei 1, da der Ausgangspunkt nicht mitgezählt wird
             long l_length = fs_Read.Length;
-            for (long l = 0; l < l_length; l++)                                           //Durch die Datei lesen
+            for (long l = 0; l < l_length; l++)
             {
                 fs_Read.Position = l;
-                if (l != l_length - 1)                                                    //Wenn es nicht das letzte Zeichen ist, - 1 da es das darauf folgende Byte überprüft
+                if (l != l_length - 1)  //Wenn es nicht das letzte Zeichen ist
                 {
-                    if ((b_sameSigns >= 4 && br.ReadByte() != br.ReadByte()) || b_sameSigns == 255)                     //Wenn das nächste Byte nicht mehr genauso wie das aktuelle ist und sich unser packing lohnt
+                    if ((b_sameSigns >= 4 && br.ReadByte() != br.ReadByte()) || b_sameSigns == 255) //Wenn das nächste Byte nicht mehr das selbe ist
                     {
-                        fs_Read.Position = l;                                                   //Muss durch die Bedingung der if zurückgestzt werden
+                        fs_Read.Position = l;   //Muss durch die Bedingung der if zurückgestzt werden
                         bw.Write(b_sign);
                         bw.Write(b_sameSigns);
                         bw.Write(br.ReadByte());
                         b_sameSigns = 1;
-                        continue;                                                               //Damit es nicht nochmal des Zeichen von der else darunter schreibt
+                        continue;   //Damit es nicht in die folgende if-Anweisung geht
                     }
-                    fs_Read.Position = l;                                                       //Muss durch die Bedingung der if zurückgestzt werden
-                    if (br.ReadByte() == b_sign)
+                    fs_Read.Position = l;
+                    if (br.ReadByte() == b_sign)    //Wenn es das Trennzeichen ist
                     {
                         bw.Write(b_sign);
                         bw.Write(b_sameSigns);
                         bw.Write(b_sign);
-                        continue;                                                               //Damit es nicht nochmal des Zeichen von der else darunter schreibt
+                        continue;
                     }
                     fs_Read.Position = l;
-                    if (br.ReadByte() == br.ReadByte())                                         //Wenn das darauf folgende Byte das selbe ist
+                    if (br.ReadByte() == br.ReadByte())
                     {
                         b_sameSigns++;
                     }
-                    else if (b_sameSigns > 1)                                                   //Falls es mehrere Zeichen einer Art sind, aber nicht genug zum packen
+                    else if (b_sameSigns > 1)   //Falls es mehrere Zeichen einer Art sind, aber nicht genug zum packen
                     {
                         fs_Read.Position = l;
                         byte b = br.ReadByte();
@@ -242,14 +242,14 @@ namespace PackerWPF
                         }
                         b_sameSigns = 1;
                     }
-                    else                                                                        //Falls es nur 1 Zeichen ist
+                    else   //Falls es nur 1 Zeichen ist
                     {
-                        fs_Read.Position = l;                                                   //Muss durch die Bedingung der if davor zurückgestzt werden
+                        fs_Read.Position = l;
                         bw.Write(br.ReadByte());
                         b_sameSigns = 1;
                     }
                 }
-                else if (b_sameSigns >= 4)                                                      //Falls es die letzte Stelle ist und schon Zeichen davor waren
+                else if (b_sameSigns >= 4)  //Falls es die letzte Stelle ist
                 {
                     bw.Write(b_sign);
                     bw.Write(b_sameSigns);
@@ -257,7 +257,11 @@ namespace PackerWPF
                 }
                 else
                 {
-                    bw.Write(br.ReadByte());                                                    //Falls es die letzte Stelle ist und es ein einzelnes Zeichen ist
+                    byte b = br.ReadByte();
+                    for (byte b_num = b_sameSigns; b_num > 0; b_num--)
+                    {
+                        bw.Write(b);
+                    }
                 }
             }
         }
