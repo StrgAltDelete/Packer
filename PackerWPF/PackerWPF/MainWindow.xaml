@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:PackerWPF"
         mc:Ignorable="d"
-        Title="MainWindow" Height="311.351" Width="755">
+        Title="Packer" Height="311.351" Width="755">
     <Grid Background="#FF101820">
         <Grid.RowDefinitions>
             <RowDefinition Height="158*"/>
