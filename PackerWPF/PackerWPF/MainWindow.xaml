@@ -11,9 +11,9 @@
             <RowDefinition Height="158*"/>
             <RowDefinition Height="261*"/>
         </Grid.RowDefinitions>
-        <Button x:Name="btn_files" Content="Datei zum kovertieren" HorizontalAlignment="Left" Margin="299,27,0,0" VerticalAlignment="Top" Width="152" Click="btn_files_Click" Height="43" Background="#FF006B38" BorderBrush="#FF137144" Foreground="White" FontSize="14" Cursor="Hand"/>
-        <Button x:Name="btn_encode" Content="Packen" HorizontalAlignment="Left" Margin="40,27.189,0,0" VerticalAlignment="Top" Width="151.811" Height="42.811" Click="btn_encode_Click" Background="#FF006B38" BorderBrush="#FF393939" Foreground="White" FontSize="14" Cursor="Hand"/>
-        <Button x:Name="btn_decode" Content="Entpacken" HorizontalAlignment="Left" Margin="549,27,40,0" VerticalAlignment="Top" Width="152" Height="43" Click="btn_decode_Click" Background="#FF006B38" BorderBrush="#FF006B38" FontSize="14" Cursor="Hand">
+        <Button x:Name="btn_files" Content="Datei auswählen" HorizontalAlignment="Left" Margin="299,27,0,0" VerticalAlignment="Top" Width="152" Click="btn_files_Click" Height="43" Background="#FF006B38" BorderBrush="#FF137144" Foreground="White" FontSize="16" Cursor="Hand"/>
+        <Button x:Name="btn_encode" Content="Packen" HorizontalAlignment="Left" Margin="40,27.189,0,0" VerticalAlignment="Top" Width="151.811" Height="42.811" Click="btn_encode_Click" Background="#FF006B38" BorderBrush="#FF393939" Foreground="White" FontSize="16" Cursor="Hand"/>
+        <Button x:Name="btn_decode" Content="Entpacken" HorizontalAlignment="Left" Margin="549,27,40,0" VerticalAlignment="Top" Width="152" Height="43" Click="btn_decode_Click" Background="#FF006B38" BorderBrush="#FF006B38" FontSize="16" Cursor="Hand">
             <Button.Foreground>
                 <SolidColorBrush Color="White"/>
             </Button.Foreground>

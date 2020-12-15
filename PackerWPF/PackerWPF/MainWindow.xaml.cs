@@ -16,18 +16,23 @@ namespace PackerWPF
         public MainWindow()
         {
             InitializeComponent();
-            btn_encode.IsEnabled = false;
+            btn_encode.IsEnabled = false;   //Deaktiviert weil sonst null als Pfad übergeben werden könnte
             btn_decode.IsEnabled = false;
+            btn_encode.Visibility = Visibility.Hidden;
+            btn_decode.Visibility = Visibility.Hidden;
         }
 
         private void btn_files_Click(object sender, RoutedEventArgs e)
         {
+            txt_messages.Text = null;
             fileDialog = new Microsoft.Win32.OpenFileDialog();
             bool b_exist = (bool)fileDialog.ShowDialog();
             if (b_exist == true)
             {
                 btn_encode.IsEnabled = true;
                 btn_decode.IsEnabled = true;
+                btn_encode.Visibility = Visibility.Visible;
+                btn_decode.Visibility = Visibility.Visible;
                 s_filePath = fileDialog.FileName;
                 s_fileName = "";    //Sonst stackt sich der Name wenn man mehrere Dateikonvertierungen macht
                 for (int i = fileDialog.FileName.Length - 1; i > 0; i--)
@@ -46,17 +51,21 @@ namespace PackerWPF
         }
         private void btn_encode_Click(object sender, RoutedEventArgs e)
         {
+            txt_messages.Text = null;
             string s_file = s_fileName;
             for (int i = s_file.Length - 1; i > 0; i--)
             {
                 if(s_file[i] == '.')
                 {
-                    s_file = s_file.Remove(i - 1);
+                    s_file = s_file.Remove(i);  //Name ohne Dateiendung
                     break;
                 }
             }
-            if (s_fileName.Length > 8)  //Überprüft ob der Name gekürtzt werden muss
+            if (s_fileName.Length > 8)  //Überprüft ob der Name gekürtzt werden muss 
+            {
                 s_file = s_fileName.Remove(8);
+                s_file += '~';
+            }
             Encoder encoder = new Encoder(s_filePath, s_file);
             if (encoder.Exist() == true)    //Wenn die .fun-Zieldatei noch nicht exestiert wird eine erstellt
             {
@@ -73,6 +82,7 @@ namespace PackerWPF
 
         private void btn_decode_Click(object sender, RoutedEventArgs e)
         {
+            txt_messages.Text = null;
             Decoder decoder = new Decoder(s_filePath);
             decoder.CallMethods(ref txt_messages);
         }
@@ -111,9 +121,9 @@ namespace PackerWPF
         }
         public void Encoding()  //Ruft alle notwendigen Methoden zum encoden auf
         {
-            this.b_sign = Sign();
+            this.b_sign = FindSign();
             Prefix();
-            Algorythm();
+            Algorithm();
             Done();
         }
         private void Prefix()   //Ruft alle notwendigen Methoden zum setzen des Headers auf
@@ -129,7 +139,7 @@ namespace PackerWPF
             foreach (byte b in s_prefix)    //Setzt unsere MagicLine
                 bw.Write(b);
         }
-        private void Name()                                                               /*Schreibt den evtl gekürtzten Dateinamen in den Header*/
+        private void Name() //Schreibt den Dateinamen in den Header
         {
             for (int i = s_Path.Length - 1; i > 0; i--)
             {
@@ -139,9 +149,10 @@ namespace PackerWPF
                     {
                         s_ending += s_Path[j];
                     }
-                    if(s_ending.Length > 5) //Datei wird auf 4 Zeichen gekürtzt, 5 weil der Punkt dazuzählt
+                    if(s_ending.Length > 5) //Dateiendung wird auf 4 Zeichen gekürzt, 5 weil der Punkt dazuzählt
                     {
                         this.s_ending = s_ending.Remove(5);
+                        s_ending += '~';
                     }
                     break;
                 }
@@ -150,13 +161,13 @@ namespace PackerWPF
                 bw.Write(b);
             foreach (byte b in s_ending)
                 bw.Write(b);
-            bw.Write((byte)'[');                                                                      //Identikator für das Ende des Namens der originellen Datei (Festgelegt)
+            bw.Write((byte)'[');    //Identikator für das Ende des Namens der originellen Datei
         }
-        private void Seperator()                                                            /*Schreibt das Trennzeichen in den Header*/
+        private void Seperator()    //Schreibt das Trennzeichen in den Header
         {
             bw.Write(b_sign);
         }
-        private void Done()                                                                 /*Schliesst und leer alle offenen Streams*/
+        private void Done() //Schliesst und leer alle offenen Streams
         {
             bw.Flush();
             bw.Close();
@@ -164,7 +175,7 @@ namespace PackerWPF
             fs_Write.Close();
             fs_Read.Close();
         }
-        private byte Sign()
+        private byte FindSign() //Sucht das beste Trennzeichen für die Datei
         {
             fs_Read = new FileStream(s_Path, FileMode.Open);
             br = new BinaryReader(fs_Read);
@@ -174,28 +185,30 @@ namespace PackerWPF
             }
             byte b_bestPos = 0;
             byte b_bestValue = 255;
-            for (byte b = 1; b < ab_signs.Length; b++)                                          //Weil Byte 0 (also NULL) nicht funtioniert
+            for (byte b = 1; b < ab_signs.Length; b++)  //Weil Byte 0 (also NULL) nicht funtioniert
             {
-                if (ab_signs[b] == 0)
+                if (ab_signs[b] == 0)   //wenn das Zeichen nicht von der Datei genutzt wird wird es gewählt
                     return b;
-                else if (ab_signs[b] < b_bestValue)
+                else if (ab_signs[b] < b_bestValue) //Sucht das Zeichen, welches am wenigsten genutzt wird 
+                {
                     b_bestValue = ab_signs[b];
-                b_bestPos = b;
-                if (b == 255)
+                    b_bestPos = b;
+                }
+                if (b == 255)   //Da es sonst bei 0 wieder zu zählen anfängt
                 {
                     break;
                 }
             }
             return ab_signs[b_bestPos];
         }
-        private void Algorythm()                                                            /*Der endgültige Encoder-Algorythmus*/
+        private void Algorithm()                                                            /*Der endgültige Encoder-Algorythmus*/
         {
             byte b_sameSigns = 1;                                                               //Zählt die Anzahl an gleichen Zeichen, startet bei 1, da der Ausgangspunkt nicht mitgezählt wird
             long l_length = fs_Read.Length;
             for (long l = 0; l < l_length; l++)                                           //Durch die Datei lesen
             {
                 fs_Read.Position = l;
-                if (l != l_length - 1)                                                    //Wenn es nicht das letzte Zeichen ist
+                if (l != l_length - 1)                                                    //Wenn es nicht das letzte Zeichen ist, - 1 da es das darauf folgende Byte überprüft
                 {
                     if ((b_sameSigns >= 4 && br.ReadByte() != br.ReadByte()) || b_sameSigns == 255)                     //Wenn das nächste Byte nicht mehr genauso wie das aktuelle ist und sich unser packing lohnt
                     {
@@ -281,7 +294,7 @@ namespace PackerWPF
             }
             if(b_PrefixValid == true)
             {
-                Algorithm();
+                Algorithm(ref txt_messages);
             }
             else //To do: Popup
             {
@@ -290,7 +303,7 @@ namespace PackerWPF
             }
         }
 
-        public void Algorithm()
+        public void Algorithm(ref System.Windows.Controls.TextBlock txt_messages)
         {
             fs_read = new FileStream(filename, FileMode.Open, FileAccess.Read);
             fs_write = new FileStream(filenameOut, FileMode.Create, FileAccess.Write);
@@ -314,7 +327,8 @@ namespace PackerWPF
                     bw.Write(currentByte);
                 }
             }
-
+            txt_messages.Foreground = System.Windows.Media.Brushes.DarkGreen;
+            txt_messages.Text = "Datei erfolgreich dekomprimiert";
             fs_read.Flush();
             bw.Flush();
             fs_read.Close();
